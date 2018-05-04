@@ -1,6 +1,7 @@
 
 import rospy
 import tf
+import tf2_ros
 import tf_conversions.posemath as tfconv
 import PyKDL
 
@@ -41,6 +42,8 @@ class HandEyeConnector(object):
         # tf structures
         self.listener = tf.TransformListener()
         self.broadcaster = tf.TransformBroadcaster()
+        self.staticbroadcaster=tf2_ros.StaticTransformBroadcaster()
+
 
         # rate limiter
         self.rate = rospy.Rate(self.sample_rate)
@@ -65,24 +68,24 @@ class HandEyeConnector(object):
     def compute_calibration(self, msg):
         rospy.loginfo("Computing from %g poses..." % len(self.hand_world_samples.transforms) )
         result = None
+	static_transformStamped = TransformStamped()
 
         # Get the camera optical frame for convenience
         optical_frame_id = msg.header.frame_id
 
         try:
             result = self.calibrate(self.camera_marker_samples, self.hand_world_samples)
+            static_transformStamped.header.stamp = rospy.Time.now()
+            static_transformStamped.header.frame_id = "/base_link"
+            #static_transformStamped.child_frame_id = "/camera2_link"
+            static_transformStamped.child_frame_id = "/camera2_color_optical_frame"
+            static_transformStamped.transform=result.effector_camera
         except rospy.ServiceException as ex:
             rospy.logerr("Calibration failed: "+str(ex))
             return None
 
         if self.publish_tf:
-            self.broadcaster.sendTransform(
-                    (result.effector_camera.translation.x, result.effector_camera.translation.y, result.effector_camera.translation.z),
-                    (result.effector_camera.rotation.x, result.effector_camera.rotation.y, result.effector_camera.rotation.z, result.effector_camera.rotation.w),
-                    rospy.Time.now(),
-                    optical_frame_id + self.tf_suffix,
-                    self.camera_parent_frame_id)
-
+			self.staticbroadcaster.sendTransform(static_transformStamped)
         rospy.loginfo("Result:\n"+str(result))
 
         ec = result.effector_camera
