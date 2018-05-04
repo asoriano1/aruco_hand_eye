@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <!-- Set the eye mode (see README for more info) -->
   <arg name="camera_parent_frame"/>
@@ -5,7 +6,7 @@
 
   <!-- The ARUCO marker properties -->
   <arg name="markerid"              default="582"/>
-  <arg name="markersize"            default="0.141"/>    <!-- in m -->
+  <arg name="markersize"            default="0.12"/>    <!-- in m -->
   <arg name="sample_rate"           default="2"/>
 
   <!-- The camera topics and frame to use for calibration -->
