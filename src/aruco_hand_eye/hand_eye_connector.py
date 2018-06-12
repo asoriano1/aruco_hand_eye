@@ -24,8 +24,8 @@ class HandEyeConnector(object):
         # is given by forward kinematics.
         # For the eye-in-hand case, this is the world or base frame.
         # For the eye-on-base case, this is the end-effector frame.
-        self.marker_parent_frame_id = rospy.get_param('~marker_parent_frame')
-
+        self.marker_parent_frame_id = rospy.get_param('~marker_parent_frame')        
+        
         self.publish_tf = rospy.get_param('~publish_tf')
         self.tf_suffix = rospy.get_param('~tf_suffix')
         self.sample_rate = rospy.get_param('~sample_rate')
@@ -76,9 +76,9 @@ class HandEyeConnector(object):
         try:
             result = self.calibrate(self.camera_marker_samples, self.hand_world_samples)
             static_transformStamped.header.stamp = rospy.Time.now()
-            static_transformStamped.header.frame_id = "/base_link"
-            #static_transformStamped.child_frame_id = "/camera2_link"
-            static_transformStamped.child_frame_id = "/camera2_color_optical_frame"
+            static_transformStamped.header.frame_id = self.camera_parent_frame_id           
+            #static_transformStamped.child_frame_id = "/camera2_color_optical_frame"
+            static_transformStamped.child_frame_id = optical_frame_id
             static_transformStamped.transform=result.effector_camera
         except rospy.ServiceException as ex:
             rospy.logerr("Calibration failed: "+str(ex))
